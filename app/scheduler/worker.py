@@ -1,7 +1,8 @@
-import time
+from app.scheduler.condition_checker import is_stop_condition_met
+from app.models import ReminderJob, ReminderStatus
 from datetime import datetime, timezone, timedelta
 from app.database import SessionLocal
-from app.models import ReminderJob, ReminderStatus
+import time
 
 POLL_INTERVAL_SECONDS = 30
 
@@ -25,12 +26,21 @@ def run_scheduler():
                 print("😴 No reminders due")
 
             for reminder in reminders:
-                print(f"⏰ Triggering reminder {reminder.id}")
+                print(f"⏰ Evaluating reminder {reminder.id}")
+
+                # 🧠 Stop-condition check
+                if is_stop_condition_met(reminder):
+                    print(f"✅ Stop condition met for reminder {reminder.id}")
+                    reminder.status = ReminderStatus.COMPLETED
+                    continue
+
+                print(f"📨 Triggering reminder {reminder.id}")
 
                 reminder.last_run_at = now
                 reminder.next_run_at = now + timedelta(
                     minutes=reminder.interval_minutes or 0
                 )
+
 
             db.commit()
         finally:
