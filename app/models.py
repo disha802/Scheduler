@@ -8,7 +8,7 @@ from sqlalchemy import (
 from sqlalchemy.sql import func
 from app.database import Base
 import enum
-
+from sqlalchemy import Boolean
 
 class ReminderStatus(enum.Enum):
     ACTIVE = "ACTIVE"
@@ -54,4 +54,21 @@ class ReminderJob(Base):
     deleted_at = Column(
         DateTime(timezone=True), 
         nullable=True
+    )
+
+
+class StatusFlag(Base):
+    __tablename__ = "status_flags"
+
+    key = Column(String, primary_key=True, index=True)
+    value = Column(Boolean, nullable=False, default=False)
+
+    created_at = Column(
+        DateTime(timezone=True),
+        server_default=func.now()
+    )
+
+    updated_at = Column(
+        DateTime(timezone=True),
+        onupdate=func.now()
     )
