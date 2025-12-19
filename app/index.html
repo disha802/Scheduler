@@ -1,0 +1,674 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reminder Scheduler Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        header {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #667eea;
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+
+        .subtitle {
+            color: #666;
+            font-size: 1.1em;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        h2 {
+            color: #667eea;
+            margin-bottom: 20px;
+            font-size: 1.8em;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 600;
+        }
+
+        .label-optional {
+            color: #999;
+            font-weight: normal;
+            font-size: 0.9em;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        input:focus, select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        input[type="datetime-local"] {
+            font-family: inherit;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .checkbox-group input[type="checkbox"] {
+            width: auto;
+            cursor: pointer;
+        }
+
+        .checkbox-group label {
+            margin-bottom: 0;
+            cursor: pointer;
+        }
+
+        .helper-text {
+            font-size: 0.85em;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1em;
+            cursor: pointer;
+            width: 100%;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        .reminders-list {
+            max-height: 600px;
+            overflow-y: auto;
+        }
+
+        .reminder-item {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border-left: 5px solid #667eea;
+            transition: transform 0.2s;
+        }
+
+        .reminder-item:hover {
+            transform: translateX(5px);
+        }
+
+        .reminder-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+
+        .reminder-id {
+            font-weight: 700;
+            color: #667eea;
+            font-size: 1.2em;
+        }
+
+        .status-badge {
+            padding: 5px 15px;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+        }
+
+        .status-ACTIVE {
+            background: #4caf50;
+            color: white;
+        }
+
+        .status-PAUSED {
+            background: #ff9800;
+            color: white;
+        }
+
+        .status-COMPLETED {
+            background: #9e9e9e;
+            color: white;
+        }
+
+        .reminder-details {
+            color: #666;
+            line-height: 1.6;
+        }
+
+        .reminder-actions {
+            margin-top: 15px;
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9em;
+            width: auto;
+        }
+
+        .btn-pause {
+            background: #ff9800;
+        }
+
+        .btn-resume {
+            background: #4caf50;
+        }
+
+        .btn-delete {
+            background: #f44336;
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 25px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 3em;
+            font-weight: 700;
+            color: #667eea;
+        }
+
+        .stat-label {
+            color: #666;
+            font-size: 1.1em;
+            margin-top: 10px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            display: none;
+        }
+
+        .alert-success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .alert-error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: #999;
+        }
+
+        .empty-state svg {
+            width: 100px;
+            height: 100px;
+            margin-bottom: 20px;
+            opacity: 0.5;
+        }
+
+        .schedule-info {
+            background: #e8eaf6;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.9em;
+            color: #3f51b5;
+            margin-top: 10px;
+        }
+
+        @media (max-width: 968px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .stats {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🔔 Reminder Scheduler Dashboard</h1>
+            <p class="subtitle">Generic database-driven reminder engine with Tortoise ORM</p>
+        </header>
+
+        <div class="stats">
+            <div class="stat-card">
+                <div class="stat-number" id="activeCount">0</div>
+                <div class="stat-label">Active Reminders</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="pausedCount">0</div>
+                <div class="stat-label">Paused Reminders</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="completedCount">0</div>
+                <div class="stat-label">Completed Reminders</div>
+            </div>
+        </div>
+
+        <div class="main-grid">
+            <div class="card">
+                <h2>Create New Reminder</h2>
+                
+                <div id="alertBox" class="alert"></div>
+
+                <form id="reminderForm">
+                    <div class="form-group">
+                        <label for="entityType">Entity Type</label>
+                        <select id="entityType" required>
+                            <option value="">Select...</option>
+                            <option value="interviewer">Interviewer</option>
+                            <option value="candidate">Candidate</option>
+                            <option value="customer">Customer</option>
+                            <option value="employee">Employee</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="entityId">Entity ID</label>
+                        <input type="text" id="entityId" placeholder="e.g., INT_100" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="eventType">Event Type</label>
+                        <select id="eventType" required>
+                            <option value="">Select...</option>
+                            <option value="feedback_form">Feedback Form</option>
+                            <option value="interview_invitation">Interview Invitation</option>
+                            <option value="payment_reminder">Payment Reminder</option>
+                            <option value="document_submission">Document Submission</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="channel">Channel</label>
+                        <select id="channel" required>
+                            <option value="email">Email</option>
+                            <option value="slack">Slack</option>
+                            <option value="sms">SMS</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="scheduleType">Schedule Type</label>
+                        <select id="scheduleType" required onchange="updateScheduleInfo()">
+                            <option value="one_time">One Time</option>
+                            <option value="recurring">Recurring</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group" id="intervalGroup">
+                        <label for="intervalMinutes">Interval (minutes)</label>
+                        <input type="number" id="intervalMinutes" placeholder="e.g., 60" min="1">
+                        <div class="helper-text">How often to repeat the reminder</div>
+                    </div>
+
+                    <div class="checkbox-group">
+                        <input type="checkbox" id="useStartTime" onchange="toggleStartTime()">
+                        <label for="useStartTime">Schedule for specific time</label>
+                    </div>
+
+                    <div class="form-group" id="startTimeGroup" style="display: none;">
+                        <label for="startTime">
+                            Start Time <span class="label-optional">(IST)</span>
+                        </label>
+                        <input type="datetime-local" id="startTime">
+                        <div class="helper-text">When to send the reminder (in Indian Standard Time)</div>
+                    </div>
+
+                    <div id="scheduleInfo" class="schedule-info"></div>
+
+                    <div class="form-group">
+                        <label for="stopConditionValue">Stop Condition Key</label>
+                        <input type="text" id="stopConditionValue" placeholder="e.g., feedback_submitted" required>
+                        <div class="helper-text">Database flag that stops this reminder</div>
+                    </div>
+
+                    <button type="submit">Create Reminder</button>
+                </form>
+            </div>
+
+            <div class="card">
+                <h2>Active Reminders</h2>
+                <div class="reminders-list" id="remindersList">
+                    <div class="empty-state">
+                        <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                        </svg>
+                        <p>No reminders yet. Create one to get started!</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://127.0.0.1:8000';
+
+        function toggleStartTime() {
+            const useStartTime = document.getElementById('useStartTime').checked;
+            const startTimeGroup = document.getElementById('startTimeGroup');
+            const startTimeInput = document.getElementById('startTime');
+            
+            if (useStartTime) {
+                startTimeGroup.style.display = 'block';
+                // Set default to current time + 1 hour
+                const now = new Date();
+                now.setHours(now.getHours() + 1);
+                now.setMinutes(0);
+                startTimeInput.value = now.toISOString().slice(0, 16);
+            } else {
+                startTimeGroup.style.display = 'none';
+                startTimeInput.value = '';
+            }
+            updateScheduleInfo();
+        }
+
+        function updateScheduleInfo() {
+            const scheduleType = document.getElementById('scheduleType').value;
+            const intervalMinutes = document.getElementById('intervalMinutes').value;
+            const useStartTime = document.getElementById('useStartTime').checked;
+            const startTime = document.getElementById('startTime').value;
+            const intervalGroup = document.getElementById('intervalGroup');
+            const intervalInput = document.getElementById('intervalMinutes');
+            const scheduleInfo = document.getElementById('scheduleInfo');
+            
+            // Show/hide interval based on schedule type
+            if (scheduleType === 'recurring') {
+                intervalGroup.style.display = 'block';
+                intervalInput.required = true;
+            } else {
+                intervalGroup.style.display = 'none';
+                intervalInput.required = false;
+            }
+
+            // Update info text
+            let info = '';
+            if (scheduleType === 'one_time') {
+                if (useStartTime && startTime) {
+                    const date = new Date(startTime);
+                    info = `📅 Will send once at ${date.toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})} IST`;
+                } else {
+                    info = '⚡ Will send immediately (within 30 seconds)';
+                }
+            } else if (scheduleType === 'recurring' && intervalMinutes) {
+                if (useStartTime && startTime) {
+                    const date = new Date(startTime);
+                    info = `🔄 First reminder at ${date.toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'})} IST, then every ${intervalMinutes} minutes`;
+                } else {
+                    info = `🔄 Will repeat every ${intervalMinutes} minutes, starting after first interval`;
+                }
+            }
+            
+            scheduleInfo.textContent = info;
+            scheduleInfo.style.display = info ? 'block' : 'none';
+        }
+
+        function showAlert(message, type) {
+            const alertBox = document.getElementById('alertBox');
+            alertBox.textContent = message;
+            alertBox.className = `alert alert-${type}`;
+            alertBox.style.display = 'block';
+            
+            setTimeout(() => {
+                alertBox.style.display = 'none';
+            }, 5000);
+        }
+
+        async function createReminder(e) {
+            e.preventDefault();
+            
+            const useStartTime = document.getElementById('useStartTime').checked;
+            const startTimeValue = document.getElementById('startTime').value;
+            
+            const data = {
+                entity_type: document.getElementById('entityType').value,
+                entity_id: document.getElementById('entityId').value,
+                event_type: document.getElementById('eventType').value,
+                channel: document.getElementById('channel').value,
+                schedule_type: document.getElementById('scheduleType').value,
+                interval_minutes: document.getElementById('intervalMinutes').value ? parseInt(document.getElementById('intervalMinutes').value) : null,
+                stop_condition_type: 'db_check',
+                stop_condition_value: document.getElementById('stopConditionValue').value
+            };
+
+            // Add start_time if checkbox is checked
+            if (useStartTime && startTimeValue) {
+                data.start_time = startTimeValue + ':00'; // Add seconds
+            }
+
+            try {
+                const response = await fetch(`${API_BASE}/reminders/`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+
+                if (response.ok) {
+                    const result = await response.json();
+                    showAlert('✅ Reminder created successfully!', 'success');
+                    document.getElementById('reminderForm').reset();
+                    document.getElementById('useStartTime').checked = false;
+                    toggleStartTime();
+                    updateScheduleInfo();
+                    loadReminders();
+                } else {
+                    const error = await response.json();
+                    showAlert('❌ Error: ' + (error.detail || 'Failed to create reminder'), 'error');
+                }
+            } catch (error) {
+                showAlert('❌ Network error. Make sure the API is running.', 'error');
+                console.error('Error:', error);
+            }
+        }
+
+        function formatDateTime(dateString) {
+            if (!dateString) return 'Not set';
+            const date = new Date(dateString);
+            return date.toLocaleString('en-IN', {timeZone: 'Asia/Kolkata'}) + ' IST';
+        }
+
+        async function loadReminders() {
+            try {
+                const response = await fetch(`${API_BASE}/reminders/`);
+                const reminders = await response.json();
+
+                const activeCount = reminders.filter(r => r.status === 'ACTIVE').length;
+                const pausedCount = reminders.filter(r => r.status === 'PAUSED').length;
+                const completedCount = reminders.filter(r => r.status === 'COMPLETED').length;
+
+                document.getElementById('activeCount').textContent = activeCount;
+                document.getElementById('pausedCount').textContent = pausedCount;
+                document.getElementById('completedCount').textContent = completedCount;
+
+                const listElement = document.getElementById('remindersList');
+                
+                if (reminders.length === 0) {
+                    listElement.innerHTML = `
+                        <div class="empty-state">
+                            <svg fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"></path>
+                            </svg>
+                            <p>No reminders yet. Create one to get started!</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                listElement.innerHTML = reminders.map(reminder => {
+                    const startTimeInfo = reminder.start_time ? 
+                        `<strong>Scheduled Start:</strong> ${formatDateTime(reminder.start_time)}<br>` : '';
+                    
+                    return `
+                        <div class="reminder-item">
+                            <div class="reminder-header">
+                                <span class="reminder-id">Reminder #${reminder.id}</span>
+                                <span class="status-badge status-${reminder.status}">${reminder.status}</span>
+                            </div>
+                            <div class="reminder-details">
+                                <strong>Entity:</strong> ${reminder.entity_type} / ${reminder.entity_id}<br>
+                                <strong>Event:</strong> ${reminder.event_type}<br>
+                                <strong>Channel:</strong> ${reminder.channel}<br>
+                                <strong>Schedule:</strong> ${reminder.schedule_type} ${reminder.interval_minutes ? `(${reminder.interval_minutes} min)` : ''}<br>
+                                ${startTimeInfo}
+                                <strong>Next Run:</strong> ${formatDateTime(reminder.next_run_at)}<br>
+                                <strong>Last Run:</strong> ${formatDateTime(reminder.last_run_at)}<br>
+                                <strong>Stop Condition:</strong> ${reminder.stop_condition_value}<br>
+                                <strong>Created:</strong> ${formatDateTime(reminder.created_at)}
+                            </div>
+                            <div class="reminder-actions">
+                                ${reminder.status === 'ACTIVE' ? 
+                                    `<button class="btn-small btn-pause" onclick="pauseReminder(${reminder.id})">⏸ Pause</button>` : 
+                                    ''}
+                                ${reminder.status === 'PAUSED' ? 
+                                    `<button class="btn-small btn-resume" onclick="resumeReminder(${reminder.id})">▶ Resume</button>` : 
+                                    ''}
+                                ${reminder.status !== 'COMPLETED' ? 
+                                    `<button class="btn-small btn-delete" onclick="deleteReminder(${reminder.id})">🗑 Delete</button>` : 
+                                    ''}
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } catch (error) {
+                console.error('Error loading reminders:', error);
+            }
+        }
+
+        async function pauseReminder(id) {
+            try {
+                const response = await fetch(`${API_BASE}/reminders/${id}/pause`, {
+                    method: 'POST'
+                });
+                if (response.ok) {
+                    showAlert('⏸ Reminder paused', 'success');
+                    loadReminders();
+                }
+            } catch (error) {
+                showAlert('❌ Failed to pause reminder', 'error');
+            }
+        }
+
+        async function resumeReminder(id) {
+            try {
+                const response = await fetch(`${API_BASE}/reminders/${id}/resume`, {
+                    method: 'POST'
+                });
+                if (response.ok) {
+                    showAlert('▶ Reminder resumed', 'success');
+                    loadReminders();
+                }
+            } catch (error) {
+                showAlert('❌ Failed to resume reminder', 'error');
+            }
+        }
+
+        async function deleteReminder(id) {
+            if (!confirm('Are you sure you want to delete this reminder?')) return;
+            
+            try {
+                const response = await fetch(`${API_BASE}/reminders/${id}`, {
+                    method: 'DELETE'
+                });
+                if (response.ok) {
+                    showAlert('🗑 Reminder deleted', 'success');
+                    loadReminders();
+                }
+            } catch (error) {
+                showAlert('❌ Failed to delete reminder', 'error');
+            }
+        }
+
+        // Initialize
+        document.getElementById('reminderForm').addEventListener('submit', createReminder);
+        document.getElementById('intervalMinutes').addEventListener('input', updateScheduleInfo);
+        document.getElementById('startTime').addEventListener('change', updateScheduleInfo);
+        
+        // Set initial state
+        updateScheduleInfo();
+        loadReminders();
+        setInterval(loadReminders, 5000); // Auto-refresh every 5 seconds
+    </script>
+</body>
+</html>
