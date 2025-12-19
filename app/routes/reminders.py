@@ -1,10 +1,9 @@
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from fastapi import APIRouter, Depends
 from app.database import SessionLocal
 from sqlalchemy.orm import Session
 from app import models, schemas
 from app.models import ReminderStatus
-from datetime import datetime, timedelta
 
 router = APIRouter()
 
@@ -41,7 +40,7 @@ def create_reminder(
     # Compute next run
     next_run = None
     if reminder.schedule_type == "recurring" and reminder.interval_minutes:
-        next_run = datetime.utcnow() + timedelta(minutes=reminder.interval_minutes)
+        next_run = datetime.now(timezone.utc) + timedelta(minutes=reminder.interval_minutes)
 
     db_reminder = models.ReminderJob(
         **reminder.dict(),
